@@ -1,0 +1,65 @@
+# CMake build directory
+/build/
+*/build/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+
+# Compiled files
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.out
+*.a
+*.lib
+*.pdb
+
+# IDE specific files
+# Visual Studio
+.vscode/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+*.userprefs
+*.suo
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+
+# Code::Blocks
+*.cbp
+*.layout
+
+# Qt Creator
+*.pro.user
+
+# Backup and temporary files
+*.swp
+*.tmp
+*.temp
+*.log
+*.dSYM/
+*.stackdump
+
+# Include Vulkan and GLFW built files
+/vulkan/
+*/glfw/
+
+# Additional files to exclude
+*.cmake
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Clangd cache
+.cache/
