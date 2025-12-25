@@ -4,6 +4,9 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#define MAX_DATA_SIZE 256
 
 char const *psSocketToIPString(void *addr, char *buf, size_t size)
 {
@@ -143,12 +146,91 @@ void psHandleNewConnection(int            listener_fd,
   if (new_fd < 0)
   {
     perror("accept");
-    exit(EXIT_FAILURE);
   }
+  else
+  {
+    psAddPollFd(pfds, new_fd, fd_count, fd_size);
 
-  psAddPollFd(pfds, new_fd, fd_count, fd_size);
+    printf("New connection from %s on socket %d\n",
+           psSocketToIPString(&their_addr, their_ip_strp, their_addrlen),
+           new_fd);
+  }
+}
 
-  printf("New connection from %s on socket %d\n",
-         psSocketToIPString(&their_addr, their_ip_strp, their_addrlen),
-         new_fd);
+void psHandleClientData(int listener_fd, int *fd_count, struct pollfd pfds[], int *pfd_i)
+{
+  char buf[MAX_DATA_SIZE];
+
+  int sender_fd = pfds[*pfd_i].fd; // The sender is us
+
+  int bytes_received = recv(sender_fd, buf, sizeof buf, 0);
+  if (bytes_received <= 0)
+  {
+    if (bytes_received == 0)
+    {
+      // Connection closed case
+      printf("Socket %d hung up\n", sender_fd);
+    }
+    else
+    {
+      // Receive error
+      perror("recv");
+    }
+
+    close(sender_fd);
+    psDeletePollFd(pfds, *pfd_i, fd_count);
+
+    // Reexamine index we were at
+    (*pfd_i)--;
+  }
+  else
+  {
+    // NOTE: %.*s prints .* chars from the given string
+    printf("Received data from fd %d: %.*s", sender_fd, bytes_received, buf);
+
+    for (int i = 0; i < *fd_count; ++i)
+    {
+      int dest_fd = pfds[i].fd;
+
+      // Don't send to listener and ourselves
+      if (dest_fd != listener_fd && dest_fd != sender_fd)
+      {
+        int bytes_sent = send(dest_fd, buf, bytes_received, 0);
+        if (bytes_sent < 0)
+        {
+          perror("send");
+        }
+      }
+    }
+  }
+}
+
+void psProcessConnections(int            listener_fd,
+                          int           *fd_count,
+                          int           *fd_size,
+                          struct pollfd *pfds[])
+{
+  for (int i = 0; i < *fd_count; ++i)
+  {
+    // Check revents is set to POLLIN or POLLHUP
+
+    // We check for:
+    // POLLIN: Data is ready to be recv() on socket
+    // POLLOUT: Data is ready to be send() on socket without blocking
+    // POLLHUP: The remote has closed the connection at this socket
+
+    if ((*pfds)[i].revents & (POLLIN | POLLHUP))
+    {
+      if ((*pfds)[i].fd == listener_fd)
+      {
+        // If the listener (us) is woken up, we have a new connection
+        psHandleNewConnection(listener_fd, fd_count, fd_size, pfds);
+      }
+      else
+      {
+        // If not, then it's just an already connected client bugging us
+        psHandleClientData(listener_fd, fd_count, *pfds, &i);
+      }
+    }
+  }
 }

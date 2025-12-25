@@ -16,4 +16,13 @@ void        psHandleNewConnection(int            listener_fd,
                                   int           *fd_size,
                                   struct pollfd *pfds[]);
 
+/**
+ * @brief Receives data from a client and then sends it to all other clients
+ */
+void psHandleClientData(int listener_fd, int *fd_count, struct pollfd pfds[], int *pfd_i);
+void psProcessConnections(int            listener_fd,
+                          int           *fd_count,
+                          int           *fd_size,
+                          struct pollfd *pfds[]);
+
 #endif
