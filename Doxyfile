@@ -1,0 +1,14 @@
+PROJECT_NAME = "PollServer"
+OUTPUT_DIRECTORY = docs
+
+INPUT = src include
+FILE_PATTERNS = *.c *.h
+RECURSIVE = YES
+
+# Required to generate docs for macros
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION = YES
+
+GENERATE_XML = YES
+GENERATE_HTML = YES
+GENERATE_LATEX = NO
