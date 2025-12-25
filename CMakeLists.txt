@@ -7,6 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(PollServer
   "${CMAKE_SOURCE_DIR}/src/pollserver.c"
+  "${CMAKE_SOURCE_DIR}/src/main.c"
 )
 
 target_include_directories(PollServer PRIVATE "${CMAKE_SOURCE_DIR}/src/include")
